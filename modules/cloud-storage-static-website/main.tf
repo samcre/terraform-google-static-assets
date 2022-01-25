@@ -78,6 +78,7 @@ resource "google_storage_bucket" "website" {
 # ------------------------------------------------------------------------------
 
 resource "google_storage_default_object_acl" "website_acl" {
+  count       = var.uniform_bucket_level_access ? 0 : 1
   provider    = google-beta
   bucket      = google_storage_bucket.website.name
   role_entity = var.website_acls
