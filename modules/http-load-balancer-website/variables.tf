@@ -190,3 +190,15 @@ variable "uniform_bucket_level_access" {
   description = "Enable uniform bucket level access (default: false)"
   type        = string
 }
+
+variable "certificate_domains" {
+  default     = []
+  description = "List of additional domain names to add to managed certificate."
+  type        = list(string)
+}
+
+variable "certificate_name" {
+  default     = ""
+  description = "Name of the managed certificate"
+  type        = string
+}

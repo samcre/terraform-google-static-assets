@@ -14,12 +14,18 @@ terraform {
 # PREPARE COMMONLY USED LOCALS
 # ------------------------------------------------------------------------------
 
+resource "random_id" "certificate_id" {
+  byte_length = 6
+}
+
 locals {
   # We have to use dashes instead of dots in the bucket name, because
   # that bucket is not a website
   website_domain_name_dashed = replace(var.website_domain_name, ".", "-")
   enable_ssl                 = var.create_certificate ? true : var.enable_ssl
   sign_key_output            = var.signed_url_key == "" && var.enable_signed_url ? random_id.url_signature[0].b64_std : var.signed_url_key
+  certificate_name           = var.certificate_name != "" ? var.certificate_name : "cdn-certificate-${random_id.certificate_id.dec}"
+  certificate_domains        = length(var.certificate_domains) != 0 ? var.certificate_domains : [var.website_domain_name]
 }
 
 module "load_balancer" {
@@ -70,14 +76,14 @@ resource "google_compute_backend_bucket" "static" {
 # ------------------------------------------------------------------------------
 
 resource "google_compute_managed_ssl_certificate" "certificate" {
-  provider = google
+  provider = google-beta
   count    = var.create_certificate ? 1 : 0
 
   project = var.project
-  name    = "cdn-certificate"
+  name    = local.certificate_name
 
   managed {
-    domains = [var.website_domain_name]
+    domains = local.certificate_domains
   }
 }
 
